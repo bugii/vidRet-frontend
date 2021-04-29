@@ -6,8 +6,16 @@
         @fetchEnd="fetchEnd"
         class="search-box search-box-1"
       />
-      <ClassSearch class="search-box search-box-2" />
-      <ColorSearch class="search-box search-box-3" />
+      <ClassSearch
+        @fetchStart="fetchStart"
+        @fetchEnd="fetchEnd"
+        class="search-box search-box-2"
+      />
+      <ColorSearch
+        @fetchStart="fetchStart"
+        @fetchEnd="fetchEnd"
+        class="search-box search-box-3"
+      />
     </div>
     <div class="right">
       <QueryResults :results="results" :isLoadingResults="isLoadingResults" />

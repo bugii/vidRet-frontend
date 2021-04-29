@@ -33,7 +33,7 @@ export default {
     CloseIcon,
   },
 
-  props: ["videoNr"],
+  props: ["videoNr", "imgName"],
 
   data() {
     return {
@@ -88,18 +88,35 @@ export default {
 
   computed: {
     videoPath() {
-      return `${process.env.BASE_URL}data/videos/${this.$props.videoNr}/${this.$props.videoNr}.mp4`;
+      return `http://localhost:9191/videos/${this.$props.videoNr}/${this.$props.videoNr}.mp4`;
     },
+  },
+
+  async mounted() {
+    // jump to timestamp from selected keyframe
+
+    const res = await (
+      await axios.post(
+        `http://localhost:9191/getPictureInformation?pictureId=${this.imgName}`
+      )
+    ).data;
+
+    const startTime = res.startTime;
+
+    this.$refs.video.currentTime = Math.floor(startTime);
+
+    console.log(res);
   },
 };
 </script>
 
 <style lang="scss" scoped>
 .video-modal {
-  position: absolute;
+  position: fixed;
   background: rgba(255, 255, 255, 0.975);
 
   width: 100%;
+  height: 100vh;
   top: 0;
   right: 0;
 

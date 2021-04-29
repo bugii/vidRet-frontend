@@ -5,6 +5,7 @@
       v-if="showModal"
       @closeVideoModal="closeModal"
       :videoNr="videoNr"
+      :imgName="imgName"
     />
     <div class="results-container">
       <img
@@ -12,7 +13,7 @@
         v-for="img in resultThumbnails"
         :key="img.imgPath"
         :src="img.imgPath"
-        @click="openVideoPlayer(img.videoNr)"
+        @click="openVideoPlayer(img.videoNr, img.imgName)"
         alt="thumbnail"
       />
     </div>
@@ -30,7 +31,7 @@ export default {
   },
 
   data() {
-    return { showModal: false, videoNr: null };
+    return { showModal: false, videoNr: null, imgName: null };
   },
 
   props: ["isLoadingResults", "results"],
@@ -38,22 +39,30 @@ export default {
   computed: {
     resultThumbnails() {
       const results = this.$props.results;
+      console.log("results", results);
       // Take all the returned image names and create local paths from it
 
-      return results.map((imgName) => {
+      const updatedArr = results.map((imgName) => {
         const videoNr = imgName.slice(4, 9);
-        const imgPath = `${process.env.BASE_URL}data/thumbnails/${videoNr}/${imgName}`;
-        console.log(imgPath);
+        const imgPath = `http://localhost:9191/thumbnails/${videoNr}/${imgName.replace(
+          "_RKF",
+          ""
+        )}`;
 
-        return { imgPath, videoNr };
+        return { imgPath, videoNr, imgName };
       });
+
+      return updatedArr;
     },
   },
 
   methods: {
-    openVideoPlayer(videoNr) {
+    openVideoPlayer(videoNr, imgName) {
       console.log("open video player for video", videoNr);
+
       this.videoNr = videoNr;
+      this.imgName = imgName;
+
       this.showModal = true;
     },
     closeModal() {

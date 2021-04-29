@@ -37,6 +37,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   components: {},
   data() {
@@ -143,14 +145,72 @@ export default {
       const colors = this.classes.map((className, i) => {
         return this.selectColor(i, nrOfClasses);
       });
-      console.log(colors);
       return colors;
     },
   },
 
   methods: {
-    search() {
-      console.log("searching for class-labelled image");
+    async search() {
+      console.log("searching for the objects", this.boxes);
+      this.$emit("fetchStart");
+
+      // convert to 2D array
+      const arr = [...Array(8)].map(() => Array(8).fill(Array(81).fill(0)));
+      const image = [...Array(512)].map(() => Array(512).fill(0));
+
+      // console.log(arr);
+      // console.log(image);
+
+      // console.log(this.boxes);
+      // loop over each individual pixel and check if we find any drawn objects in that pixel
+
+      // arr.forEach((yArr, y) => {
+      //   yArr.forEach((xArr, x) => {
+      //     console.log(y, x);
+      //   });
+      // });
+
+      // let foundPixels = 0;
+
+      image.forEach((yArr, y) => {
+        yArr.forEach((xArr, x) => {
+          // console.log(y, x);
+          // loop over all drawn objects
+          this.boxes.forEach((b) => {
+            // const classID = b.classId;
+            if (
+              b.x <= x &&
+              x <= b.x + b.width &&
+              b.y <= y &&
+              y <= b.y + b.height
+            ) {
+              // console.log(`pixel ${y},${x} contains object ID ${classID}`);
+              // foundPixels += 1;
+              const xGrid = Math.ceil((x + 1) / 64);
+              const yGrid = Math.ceil((y + 1) / 64);
+              arr[yGrid - 1][xGrid - 1][b.classId] += 1;
+            }
+          });
+        });
+      });
+
+      console.log("done", arr);
+
+      const res = await (
+        await axios.post(`http://localhost:9191/SearchMilvus?topk=500`, arr)
+      ).data;
+
+      console.log("result", res);
+
+      // console.log(res);
+      // this.boxes.forEach((b) => {
+      //   // get the 4 coords
+      // });
+
+      const pictureIds = res.map((e) => e.pictureId);
+      // console.log(pictureIds);
+
+      this.$emit("fetchEnd", pictureIds);
     },
 
     selectColor(colorNum, colors) {
@@ -178,15 +238,21 @@ export default {
     },
     finishedPainting() {
       this.painting = false;
+      this.drawingBox.classId = this.selectedClass;
       const overlayCanvas = this.$refs.overlayCanvas;
-      overlayCanvas.getContext("2d").strokeStyle = "blue";
-      overlayCanvas.getContext("2d").lineWidth = 3;
+      // overlayCanvas.getContext("2d").strokeStyle = "blue";
+      // overlayCanvas.getContext("2d").lineWidth = 3;
+      console.log(this.colors[this.selectedClass]);
+      overlayCanvas.getContext("2d").fillStyle = this.colors[
+        this.selectedClass
+      ];
 
       console.log("finished painting", this.drawingBox);
+      this.boxes.push(this.drawingBox);
 
       overlayCanvas
         .getContext("2d")
-        .strokeRect(
+        .fillRect(
           this.drawingBox.x,
           this.drawingBox.y,
           this.drawingBox.width,
