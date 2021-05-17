@@ -48,6 +48,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   data() {
     return {
@@ -144,7 +146,7 @@ export default {
     },
   },
   methods: {
-    search() {
+    async search() {
       console.log(
         "searching for class-labelled image",
         //   this.$refs.canvas
@@ -153,6 +155,27 @@ export default {
 
         this.colorsLAB
       );
+
+      this.$emit("fetchStart");
+
+      const res = await (
+        await axios.post(
+          `http://localhost:9191/SearchColorMilvus?topk=500`,
+          this.colorsLAB
+        )
+      ).data;
+
+      console.log("result", res);
+
+      // console.log(res);
+      // this.boxes.forEach((b) => {
+      //   // get the 4 coords
+      // });
+
+      const pictureIds = res.map((e) => e.pictureId);
+      // console.log(pictureIds);
+
+      this.$emit("fetchEnd", pictureIds);
     },
 
     convertHex(hexCode) {

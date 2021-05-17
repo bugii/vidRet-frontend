@@ -197,7 +197,10 @@ export default {
       console.log("done", arr);
 
       const res = await (
-        await axios.post(`http://localhost:9191/SearchMilvus?topk=500`, arr)
+        await axios.post(
+          `http://localhost:9191/SearchClassMilvus?topk=500`,
+          arr
+        )
       ).data;
 
       console.log("result", res);
