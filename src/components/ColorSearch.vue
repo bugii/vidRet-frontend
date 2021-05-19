@@ -7,177 +7,43 @@
     <input v-model="selectedColor" type="color" id="color" name="color" />
 
     <div class="canvas-wrapper">
-      <!-- <canvas
-        @mousedown="startPainting"
-        @mouseup="finishedPainting"
-        @mousemove="draw"
-        width="512"
-        height="512"
-        ref="canvas"
-      ></canvas> -->
-      <!-- <div class="row" v-for="y in colorsRGB.length" :key="y">
+      <div class="row" v-for="y in colors.length" :key="y">
         <div
-          v-for="x in y.length"
-          :key="x"
-          :style="{
-            backgroundColor: `rgb(${colorsRGB[y][x][0]},${colorsRGB[y][x][1]},${colorsRGB[y][x][2]}`,
-          }"
-          @click="setColor(y, x)"
-        >
-          {{ y }}-{{ x }}
-        </div>
-      </div> -->
-      <div class="row" v-for="y in colorsRGB.length" :key="y">
-        <div
-          v-for="x in colorsRGB[y - 1].length"
+          v-for="x in colors[y - 1].length"
           :key="x"
           @click="setColor(y - 1, x - 1)"
           :style="{
-            backgroundColor: `rgb(${colorsRGB[y - 1][x - 1][0]},${
-              colorsRGB[y - 1][x - 1][1]
-            },${colorsRGB[y - 1][x - 1][2]})`,
+            backgroundColor: `rgb(${colors[y - 1][x - 1][0]},${
+              colors[y - 1][x - 1][1]
+            },${colors[y - 1][x - 1][2]})`,
           }"
         ></div>
       </div>
     </div>
 
-    <button @click.prevent="search">
-      Search
-    </button>
+    <div class="button-container">
+      <button @click.prevent="$emit('clear')">
+        Clear
+      </button>
+
+      <button @click.prevent="$emit('search')">
+        Search
+      </button>
+    </div>
   </div>
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
   data() {
     return {
       selectedColor: "#00000",
-      painting: false,
-      colorsRGB: [
-        [
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-        ],
-        [
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-        ],
-        [
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-        ],
-        [
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-        ],
-        [
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-        ],
-        [
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-        ],
-        [
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-        ],
-        [
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-          [255, 255, 255],
-        ],
-      ],
     };
   },
 
-  computed: {
-    colorsLAB() {
-      return this.colorsRGB.map((r) => r.map((c) => this.rgb2lab(c)));
-    },
-  },
+  props: ["colors"],
+
   methods: {
-    async search() {
-      console.log(
-        "searching for class-labelled image",
-        //   this.$refs.canvas
-        //     .getContext("2d")
-        //     .getImageData(0, 0, this.$refs.canvas.width, this.$refs.canvas.height)
-
-        this.colorsLAB
-      );
-
-      this.$emit("fetchStart");
-
-      const res = await (
-        await axios.post(
-          `http://localhost:9191/SearchColorMilvus?topk=500`,
-          this.colorsLAB
-        )
-      ).data;
-
-      console.log("result", res);
-
-      // console.log(res);
-      // this.boxes.forEach((b) => {
-      //   // get the 4 coords
-      // });
-
-      const pictureIds = res.map((e) => e.pictureId);
-      // console.log(pictureIds);
-
-      this.$emit("fetchEnd", pictureIds);
-    },
-
     convertHex(hexCode) {
       var hex = hexCode.replace("#", "");
 
@@ -192,33 +58,10 @@ export default {
       return [r, g, b];
     },
 
-    rgb2lab(rgb) {
-      var r = rgb[0] / 255,
-        g = rgb[1] / 255,
-        b = rgb[2] / 255,
-        x,
-        y,
-        z;
-
-      r = r > 0.04045 ? Math.pow((r + 0.055) / 1.055, 2.4) : r / 12.92;
-      g = g > 0.04045 ? Math.pow((g + 0.055) / 1.055, 2.4) : g / 12.92;
-      b = b > 0.04045 ? Math.pow((b + 0.055) / 1.055, 2.4) : b / 12.92;
-
-      x = (r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047;
-      y = (r * 0.2126 + g * 0.7152 + b * 0.0722) / 1.0;
-      z = (r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883;
-
-      x = x > 0.008856 ? Math.pow(x, 1 / 3) : 7.787 * x + 16 / 116;
-      y = y > 0.008856 ? Math.pow(y, 1 / 3) : 7.787 * y + 16 / 116;
-      z = z > 0.008856 ? Math.pow(z, 1 / 3) : 7.787 * z + 16 / 116;
-
-      return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
-    },
-
     setColor(y, x) {
       const rgbColor = this.convertHex(this.selectedColor);
       console.log("setting color for", y, x, rgbColor);
-      this.$set(this.colorsRGB[y], x, rgbColor);
+      this.$emit("setColor", y, x, rgbColor);
     },
 
     // getMousePos(evt) {
@@ -263,19 +106,23 @@ export default {
 .text-search-container {
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  // min-height: 0;
 
   .box-title {
-    margin-bottom: 1rem;
+    font-weight: 600;
   }
 
-  button {
-    margin-top: 1rem;
+  .button-container {
+    display: flex;
+    margin-top: 0.25rem;
+
+    button {
+      flex-grow: 1;
+    }
   }
 
   .canvas-wrapper {
-    min-height: 0;
-    margin-top: 1rem;
+    margin-top: 0.25rem;
 
     // canvas {
     //   border: lightgray thin solid;
@@ -289,8 +136,9 @@ export default {
       display: flex;
 
       div {
-        width: 2rem;
-        height: 2rem;
+        width: calc(100% / 8);
+        padding-top: calc(100% / 8);
+        // height: calc(100% / 8);
         border: thin gainsboro solid;
       }
     }

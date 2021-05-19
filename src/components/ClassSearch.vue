@@ -30,15 +30,18 @@
       </canvas>
     </div>
 
-    <button @click.prevent="search">
-      Search
-    </button>
+    <div class="button-container">
+      <button @click.prevent="clear">
+        Clear
+      </button>
+      <button @click.prevent="$emit('search')">
+        Search
+      </button>
+    </div>
   </div>
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
   components: {},
   data() {
@@ -51,7 +54,6 @@ export default {
         height: 0,
         classId: null,
       },
-      boxes: [],
       selectedClass: null,
       classes: [
         "BG",
@@ -139,6 +141,8 @@ export default {
     };
   },
 
+  props: ["boxes"],
+
   computed: {
     colors() {
       const nrOfClasses = this.classes.length;
@@ -150,72 +154,6 @@ export default {
   },
 
   methods: {
-    async search() {
-      console.log("searching for the objects", this.boxes);
-      this.$emit("fetchStart");
-
-      // convert to 2D array
-      const arr = [...Array(8)].map(() => Array(8).fill(Array(81).fill(0)));
-      const image = [...Array(512)].map(() => Array(512).fill(0));
-
-      // console.log(arr);
-      // console.log(image);
-
-      // console.log(this.boxes);
-      // loop over each individual pixel and check if we find any drawn objects in that pixel
-
-      // arr.forEach((yArr, y) => {
-      //   yArr.forEach((xArr, x) => {
-      //     console.log(y, x);
-      //   });
-      // });
-
-      // let foundPixels = 0;
-
-      image.forEach((yArr, y) => {
-        yArr.forEach((xArr, x) => {
-          // console.log(y, x);
-          // loop over all drawn objects
-          this.boxes.forEach((b) => {
-            // const classID = b.classId;
-            if (
-              b.x <= x &&
-              x <= b.x + b.width &&
-              b.y <= y &&
-              y <= b.y + b.height
-            ) {
-              // console.log(`pixel ${y},${x} contains object ID ${classID}`);
-              // foundPixels += 1;
-              const xGrid = Math.ceil((x + 1) / 64);
-              const yGrid = Math.ceil((y + 1) / 64);
-              arr[yGrid - 1][xGrid - 1][b.classId] += 1;
-            }
-          });
-        });
-      });
-
-      console.log("done", arr);
-
-      const res = await (
-        await axios.post(
-          `http://localhost:9191/SearchClassMilvus?topk=500`,
-          arr
-        )
-      ).data;
-
-      console.log("result", res);
-
-      // console.log(res);
-      // this.boxes.forEach((b) => {
-      //   // get the 4 coords
-      // });
-
-      const pictureIds = res.map((e) => e.pictureId);
-      // console.log(pictureIds);
-
-      this.$emit("fetchEnd", pictureIds);
-    },
-
     selectColor(colorNum, colors) {
       if (colors < 1) colors = 1; // defaults to one color - avoid divide by zero
       return "hsl(" + ((colorNum * (360 / colors)) % 360) + ",100%,50%)";
@@ -251,16 +189,19 @@ export default {
       ];
 
       console.log("finished painting", this.drawingBox);
-      this.boxes.push(this.drawingBox);
+      // this.boxes.push(this.drawingBox);
+      if (this.selectedClass) {
+        this.$emit("addBox", this.drawingBox);
 
-      overlayCanvas
-        .getContext("2d")
-        .fillRect(
-          this.drawingBox.x,
-          this.drawingBox.y,
-          this.drawingBox.width,
-          this.drawingBox.height
-        );
+        overlayCanvas
+          .getContext("2d")
+          .fillRect(
+            this.drawingBox.x,
+            this.drawingBox.y,
+            this.drawingBox.width,
+            this.drawingBox.height
+          );
+      }
     },
     draw(e) {
       if (!this.painting) return;
@@ -282,6 +223,18 @@ export default {
           this.drawingBox.height
         );
     },
+
+    clear() {
+      this.$emit("clear");
+
+      const canvas = this.$refs.canvas;
+      canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+
+      const overlayCanvas = this.$refs.overlayCanvas;
+      overlayCanvas
+        .getContext("2d")
+        .clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    },
   },
 };
 </script>
@@ -290,24 +243,33 @@ export default {
 .text-search-container {
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  // min-height: 0;
 
   .box-title {
-    margin-bottom: 1rem;
+    font-weight: 600;
   }
 
-  button {
-    margin-top: 1rem;
+  .button-container {
+    display: flex;
+    margin-top: 0.25rem;
+
+    button {
+      flex-grow: 1;
+    }
+  }
+
+  select {
+    margin-top: 0.25rem;
   }
 
   .canvas-wrapper {
     position: relative;
-    margin-top: 1rem;
-    min-height: 0;
+    margin-top: 0.25rem;
+    // min-height: 0;
 
     canvas {
       border: lightgray thin solid;
-      min-height: 0;
+      // min-height: 0;
       max-height: 100%;
       max-width: 100%;
     }

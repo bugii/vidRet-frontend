@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="height: 100%;">
     <LoadingSpinner v-if="isLoadingResults" />
     <VideoModal
       v-if="showModal"
@@ -8,14 +8,20 @@
       :imgName="imgName"
     />
     <div class="results-container">
-      <img
-        class="result-image"
-        v-for="img in resultThumbnails"
-        :key="img.imgPath"
-        :src="img.imgPath"
-        @click="openVideoPlayer(img.videoNr, img.imgName)"
-        alt="thumbnail"
-      />
+      <div
+        class="video-container"
+        v-for="e in resultThumbnailsPerVideo"
+        :key="e.video"
+      >
+        <img
+          class="result-image"
+          v-for="img in e.results"
+          :key="img.imgPath"
+          :src="img.imgPath"
+          @click="openVideoPlayer(img.videoNr, img.imgName)"
+          alt="thumbnail"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -37,22 +43,34 @@ export default {
   props: ["isLoadingResults", "results"],
 
   computed: {
-    resultThumbnails() {
+    resultThumbnailsPerVideo() {
       const results = this.$props.results;
+
+      const thumbsPerVideo = {};
+
       console.log("results", results);
       // Take all the returned image names and create local paths from it
 
-      const updatedArr = results.map((imgName) => {
+      results.forEach((imgName) => {
         const videoNr = imgName.slice(4, 9);
         const imgPath = `http://localhost:9191/thumbnails/${videoNr}/${imgName.replace(
           "_RKF",
           ""
         )}`;
 
-        return { imgPath, videoNr, imgName };
+        const current = thumbsPerVideo[videoNr];
+        if (current) {
+          current.results.push({ imgPath, videoNr, imgName });
+        } else {
+          thumbsPerVideo[videoNr] = {
+            video: videoNr,
+            results: [{ imgPath, videoNr, imgName }],
+          };
+        }
       });
 
-      return updatedArr;
+      console.log(thumbsPerVideo);
+      return thumbsPerVideo;
     },
   },
 
@@ -79,6 +97,15 @@ export default {
   flex-wrap: wrap;
   padding: 1rem;
   overflow: auto;
+  height: 100%;
+
+  .video-container {
+    padding: 0.25rem;
+    margin: 0.25rem;
+    border: gainsboro 1px solid;
+    border-radius: 0.25rem;
+    width: 100%;
+  }
 
   .result-image {
     width: 10%;
