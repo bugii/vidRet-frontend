@@ -33,7 +33,7 @@ export default {
     CloseIcon,
   },
 
-  props: ["videoNr", "imgName"],
+  props: ["videoNr", "imgName", "sessionId"],
 
   data() {
     return {
@@ -42,34 +42,25 @@ export default {
   },
 
   methods: {
-    async login() {
-      const res = await (
-        await axios.post("http://localhost:8080/api/login", {
-          username: "admin",
-          password: "password",
-        })
-      ).data;
+    async submit() {
+      try {
+        const res = await (
+          await axios.get("https://test.interactivevideoretrieval.com/submit", {
+            params: {
+              item: this.videoNr, // item -  item which is to be submitted
+              timecode: `${this.timestamp}:00`, // timecode - in this case, we use the timestamp in the form HH:MM:SS:FF
+              session: this.sessionId, // the sessionId, as always
+            },
+          })
+        ).data;
 
-      console.log(res);
-      this.sessionId = res.sessionId;
-    },
-
-    async submitToAPI() {
-      const res = await (
-        await axios.get("http://localhost:8080/submit", {
-          params: {
-            item: `${this.$props.videoNr}`, // item -  item which is to be submitted
-            timecode: `${this.timestamp}:00`, // timecode - in this case, we use the timestamp in the form HH:MM:SS:FF
-            sessionId: this.sessionId, // the sessionId, as always
-          },
-        })
-      ).data;
-
-      console.log(res);
+        console.log(res);
+      } catch (error) {
+        console.log(error);
+      }
     },
 
     close() {
-      console.log("click");
       this.$emit("closeVideoModal");
     },
 
@@ -77,12 +68,6 @@ export default {
       this.timestamp = new Date(this.$refs.video.currentTime * 1000)
         .toISOString()
         .substr(11, 8);
-    },
-
-    async submit() {
-      //TODO: Move login into nav bar or so
-      await this.login();
-      await this.submitToAPI();
     },
   },
 

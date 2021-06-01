@@ -6,12 +6,17 @@
 
     <input v-model="selectedColor" type="color" id="color" name="color" />
 
-    <div class="canvas-wrapper">
+    <div
+      class="canvas-wrapper"
+      @mousedown="mouseDown = true"
+      @mouseup="mouseDown = false"
+    >
       <div class="row" v-for="y in colors.length" :key="y">
         <div
           v-for="x in colors[y - 1].length"
           :key="x"
-          @click="setColor(y - 1, x - 1)"
+          @mousedown="setColor(y - 1, x - 1)"
+          @mouseenter="setColorIfMouseDown(y - 1, x - 1)"
           :style="{
             backgroundColor: `rgb(${colors[y - 1][x - 1][0]},${
               colors[y - 1][x - 1][1]
@@ -38,6 +43,7 @@ export default {
   data() {
     return {
       selectedColor: "#00000",
+      mouseDown: false,
     };
   },
 
@@ -62,6 +68,14 @@ export default {
       const rgbColor = this.convertHex(this.selectedColor);
       console.log("setting color for", y, x, rgbColor);
       this.$emit("setColor", y, x, rgbColor);
+    },
+
+    setColorIfMouseDown(y, x) {
+      if (this.mouseDown) {
+        const rgbColor = this.convertHex(this.selectedColor);
+        console.log("setting color for", y, x, rgbColor);
+        this.$emit("setColor", y, x, rgbColor);
+      }
     },
 
     // getMousePos(evt) {

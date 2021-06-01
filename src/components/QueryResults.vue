@@ -6,6 +6,7 @@
       @closeVideoModal="closeModal"
       :videoNr="videoNr"
       :imgName="imgName"
+      :sessionId="sessionId"
     />
     <div class="results-container">
       <div
@@ -40,7 +41,7 @@ export default {
     return { showModal: false, videoNr: null, imgName: null };
   },
 
-  props: ["isLoadingResults", "results"],
+  props: ["isLoadingResults", "results", "sessionId"],
 
   computed: {
     resultThumbnailsPerVideo() {

@@ -1,5 +1,9 @@
 <template>
   <div id="app">
+    <div v-if="!loggedIn" class="not-logged-in-info">
+      You are currently NOT logged in. Please do so before submitting!
+    </div>
+
     <div class="left">
       <div class="search-results">
         <label for="searchResults">Results</label>
@@ -8,6 +12,20 @@
           type="number"
           v-model="searchResults"
         />
+      </div>
+
+      <div v-if="!loggedIn" class="submission-credentials">
+        <div class="box-title">Submission credentials</div>
+        <label for="username">User name </label>
+        <input v-model="username" type="text" name="username" id="username" />
+        <label for="password">Password </label>
+        <input
+          v-model="password"
+          type="password"
+          name="password"
+          id="password"
+        />
+        <button class="submission-button" @click="login">Log in</button>
       </div>
 
       <TextSearch @search="textSearch" @update="updateText" :keyword="text" />
@@ -30,7 +48,11 @@
       />
     </div>
     <div class="right">
-      <QueryResults :results="results" :isLoadingResults="isLoadingResults" />
+      <QueryResults
+        :sessionId="sessionId"
+        :results="results"
+        :isLoadingResults="isLoadingResults"
+      />
     </div>
   </div>
 </template>
@@ -47,6 +69,9 @@ import CombinedSearch from "@/components/CombinedSearch.vue";
 export default {
   data() {
     return {
+      username: null,
+      password: null,
+      sessionId: null,
       searchResults: 100,
       isLoadingResults: false,
       text: "",
@@ -154,9 +179,30 @@ export default {
     colorsLAB() {
       return this.colorsRGB.map((r) => r.map((c) => this.rgb2lab(c)));
     },
+    loggedIn() {
+      if (this.sessionId !== null) return true;
+      return false;
+    },
   },
 
   methods: {
+    async login() {
+      console.log("logging in with", this.username, this.password);
+
+      const res = await (
+        await axios.post(
+          "https://test.interactivevideoretrieval.com/api/login",
+          {
+            username: this.username,
+            password: this.password,
+          }
+        )
+      ).data;
+
+      console.log(res);
+      this.sessionId = res.sessionId;
+    },
+
     updateText(val) {
       this.text = val;
     },
@@ -427,6 +473,33 @@ export default {
   display: flex;
   margin: 1rem;
   height: calc(100vh - 2rem);
+
+  .not-logged-in-info {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    padding: 0.5rem;
+    background: red;
+    color: white;
+    display: flex;
+    justify-content: center;
+  }
+
+  .box-title {
+    font-weight: 600;
+  }
+
+  .submission-button {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+
+  input,
+  label {
+    width: 100%;
+  }
 
   .left {
     flex: 0 0 20%;
