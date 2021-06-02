@@ -205,7 +205,7 @@ export default {
     },
     draw(e) {
       if (!this.painting) return;
-      console.log("draw");
+      // console.log("draw");
 
       const canvas = this.$refs.canvas;
 

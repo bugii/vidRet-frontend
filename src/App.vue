@@ -171,10 +171,6 @@ export default {
     CombinedSearch,
   },
 
-  mounted() {
-    console.log(process.env);
-  },
-
   computed: {
     colorsLAB() {
       return this.colorsRGB.map((r) => r.map((c) => this.rgb2lab(c)));
@@ -187,7 +183,7 @@ export default {
 
   methods: {
     async login() {
-      console.log("logging in with", this.username, this.password);
+      // console.log("logging in with", this.username, this.password);
 
       const res = await (
         await axios.post(
@@ -218,10 +214,10 @@ export default {
           )
         ).data;
 
-        const arr = res.map((e) => e.pictureId);
-        console.log(arr);
-
-        this.fetchEnd(arr);
+        // const arr = res.map((e) => e.pictureId);
+        // console.log(arr);
+        console.log("result", res);
+        this.fetchEnd(res);
       } catch (error) {
         console.log(error);
       }
@@ -242,9 +238,9 @@ export default {
 
       console.log("result", res);
 
-      const pictureIds = res.map((e) => e.pictureId);
+      // const pictureIds = res.map((e) => e.pictureId);
 
-      this.fetchEnd(pictureIds);
+      this.fetchEnd(res);
     },
 
     async colorSearch() {
@@ -265,9 +261,9 @@ export default {
 
       console.log("result", res);
 
-      const pictureIds = res.map((e) => e.pictureId);
+      // const pictureIds = res.map((e) => e.pictureId);
 
-      this.fetchEnd(pictureIds);
+      this.fetchEnd(res);
     },
 
     async combinedSearch() {
@@ -293,9 +289,9 @@ export default {
 
       console.log("result", res);
 
-      const pictureIds = res.map((e) => e.pictureId);
+      // const pictureIds = res.map((e) => e.pictureId);
 
-      this.fetchEnd(pictureIds);
+      this.fetchEnd(res);
     },
 
     fetchEnd(results) {
@@ -451,7 +447,7 @@ export default {
 
     setClassFraction(val) {
       this.classFraction = val;
-      console.log(val);
+      // console.log(val);
     },
   },
 };
@@ -476,6 +472,7 @@ export default {
 
   .not-logged-in-info {
     position: fixed;
+    z-index: 1;
     top: 0;
     left: 0;
     width: 100vw;

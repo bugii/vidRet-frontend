@@ -5,7 +5,7 @@
     </div>
     <h1>{{ videoNr }}</h1>
     <div class="video-container">
-      <video ref="video" autoplay controls>
+      <video ref="video" controls>
         <source :src="videoPath" type="video/mp4" />
       </video>
     </div>
@@ -33,7 +33,7 @@ export default {
     CloseIcon,
   },
 
-  props: ["videoNr", "imgName", "sessionId"],
+  props: ["videoNr", "imgName", "sessionId", "startTime"],
 
   data() {
     return {
@@ -54,9 +54,15 @@ export default {
           })
         ).data;
 
-        console.log(res);
+        if (res.submission === "CORRECT") {
+          this.$toast.success(res.description);
+        } else if (res.submission === "WRONG") {
+          this.$toast.error(res.description);
+        } else {
+          this.$toast(res.description);
+        }
       } catch (error) {
-        console.log(error);
+        this.$toast.error(error.message);
       }
     },
 
@@ -78,19 +84,14 @@ export default {
   },
 
   async mounted() {
-    // jump to timestamp from selected keyframe
+    console.log("jumping to", this.startTime);
+    const video = this.$refs.video;
+    video.play();
 
-    const res = await (
-      await axios.post(
-        `http://localhost:9191/getPictureInformation?pictureId=${this.imgName}`
-      )
-    ).data;
+    const startTime = this.startTime;
 
-    const startTime = res.startTime;
-
-    this.$refs.video.currentTime = Math.floor(startTime);
-
-    console.log(res);
+    video.currentTime = Math.floor(startTime);
+    // this.$refs.video.addEventListener("canplay", this.canPlay);
   },
 };
 </script>
@@ -99,6 +100,7 @@ export default {
 .video-modal {
   position: fixed;
   background: rgba(255, 255, 255, 0.975);
+  z-index: 2;
 
   width: 100%;
   height: 100vh;
@@ -120,8 +122,11 @@ export default {
 
   .video-container {
     width: 100%;
+
     video {
+      display: block;
       width: 100%;
+      max-height: 70vh;
     }
   }
 }

@@ -66,14 +66,14 @@ export default {
 
     setColor(y, x) {
       const rgbColor = this.convertHex(this.selectedColor);
-      console.log("setting color for", y, x, rgbColor);
+      // console.log("setting color for", y, x, rgbColor);
       this.$emit("setColor", y, x, rgbColor);
     },
 
     setColorIfMouseDown(y, x) {
       if (this.mouseDown) {
         const rgbColor = this.convertHex(this.selectedColor);
-        console.log("setting color for", y, x, rgbColor);
+        // console.log("setting color for", y, x, rgbColor);
         this.$emit("setColor", y, x, rgbColor);
       }
     },
