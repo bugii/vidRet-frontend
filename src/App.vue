@@ -187,7 +187,7 @@ export default {
 
       const res = await (
         await axios.post(
-          "https://test.interactivevideoretrieval.com/api/login",
+          "https://interactivevideoretrieval.com/api/login",
           {
             username: this.username,
             password: this.password,
