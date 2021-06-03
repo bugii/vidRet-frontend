@@ -45,7 +45,7 @@ export default {
     async submit() {
       try {
         const res = await (
-          await axios.get("https://test.interactivevideoretrieval.com/submit", {
+          await axios.get("https://interactivevideoretrieval.com/submit", {
             params: {
               item: this.videoNr, // item -  item which is to be submitted
               timecode: `${this.timestamp}:00`, // timecode - in this case, we use the timestamp in the form HH:MM:SS:FF

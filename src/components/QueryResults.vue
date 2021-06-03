@@ -116,7 +116,7 @@ export default {
       console.log(img);
       try {
         const res = await (
-          await axios.get("https://test.interactivevideoretrieval.com/submit", {
+          await axios.get("https://interactivevideoretrieval.com/submit", {
             params: {
               item: img.videoNr, // item -  item which is to be submitted
               frame: img.frame, // timecode - in this case, we use the timestamp in the form HH:MM:SS:FF
